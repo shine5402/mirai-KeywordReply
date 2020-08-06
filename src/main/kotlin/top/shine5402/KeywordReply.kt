@@ -12,7 +12,7 @@ import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.message.data.source
 
 object KeywordReply : PluginBase() {
-    val config = Config.Companion.load("settings.yml")
+    val config = loadConfig("settings.yml")
 
     private fun loadConfig(config: Config) {
         val keywordRulesConfigSection = if (config.exist("rules")) config.getConfigSectionList("rules") else null
@@ -97,7 +97,7 @@ object KeywordReply : PluginBase() {
                 keywordRules.add(KeywordRuleFactory.create(_type, keyword, reply, groups))
                 val logMessage = "关键字添加成功。\n" + keywordRules.last().toStringHumanFriendly()
                 sendMessage(logMessage)
-                logger.info(logMessage);
+                logger.info(logMessage)
                 return@onCommand true
             }
         }
@@ -152,6 +152,7 @@ object KeywordReply : PluginBase() {
                 if (it.count() != 0)
                     return@onCommand false
                 saveConfig()
+                sendMessage("关键词配置保存完成。")
                 return@onCommand true
             }
         }
