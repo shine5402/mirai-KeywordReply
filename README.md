@@ -38,9 +38,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-##TODO
+## TODO
 
-[ ] 完善readme
-[ ] 随机从回复列表挑选回复
-[ ] 目前回复关键词有可能会重复
-[ ] 回复规则优先级
+- [ ] 完善readme
+- [ ] 随机从回复列表挑选回复
+- [ ] 目前回复关键词有可能会重复
+- [ ] 回复规则优先级
