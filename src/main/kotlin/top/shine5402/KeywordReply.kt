@@ -120,7 +120,7 @@ object KeywordReply : PluginBase() {
                 }
                 sendMessage(keywordRules.mapIndexed { i, rule ->
                     "${i + 1}| ${rule.toStringHumanFriendly()}"
-                }.joinToString { "$it\n" })
+                }.joinToString("\n"))
                 return@onCommand true
             }
         }

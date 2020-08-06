@@ -59,7 +59,7 @@ abstract class KeywordRule(val keyword: String, val reply: String, val matchGrou
         return "匹配模式：$type；" +
                 "关键字：$keyword；" +
                 "回复：$reply；" +
-                "开启群：${if (matchGroupID.isEmpty()) "所有群" else matchGroupID.map { it.toString() }.joinToString { ";" }}。"
+                "开启群：${if (matchGroupID.isEmpty()) "所有群" else matchGroupID.map { it.toString() }.joinToString(";")}。"
     }
 }
 
