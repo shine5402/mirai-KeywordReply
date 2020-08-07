@@ -3,36 +3,20 @@ package top.shine5402
 import net.mamoe.mirai.console.command.registerCommand
 import net.mamoe.mirai.console.plugins.Config
 import net.mamoe.mirai.console.plugins.PluginBase
-import net.mamoe.mirai.console.plugins.ToBeRemoved
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.TempMessageEvent
 import net.mamoe.mirai.message.data.content
-import net.mamoe.mirai.message.data.source
 
 object KeywordReply : PluginBase() {
-    val config = loadConfig("settings.yml")
 
-    private fun loadConfig(config: Config) {
-        val keywordRulesConfigSection = if (config.exist("rules")) config.getConfigSectionList("rules") else null
-        keywordRules.clear()
-        keywordRules.addAll(keywordRulesConfigSection?.map {
-            KeywordRuleFactory.fromConfigSection(it)
-        }?.toMutableList() ?: mutableListOf())
-    }
-
-    private fun saveConfig() {
-        config.set("rules", keywordRules.map { it.toConfigSection() })
-        config.save()
-    }
-
-    private val keywordRules: MutableList<KeywordRule> = mutableListOf()
+    val keywordRules: MutableList<KeywordRule> = mutableListOf()
 
     override fun onLoad() {
         super.onLoad()
-        loadConfig(config)
+        KeywordReplyConfig.loadConfig()
         logger.info("关键字配置已经被读取。共读取了${keywordRules.count()}条规则。")
     }
 
@@ -152,7 +136,7 @@ object KeywordReply : PluginBase() {
             onCommand {
                 if (it.count() != 0)
                     return@onCommand false
-                saveConfig()
+                KeywordReplyConfig.saveConfig()
                 sendMessage("关键词配置保存完成。")
                 return@onCommand true
             }
@@ -168,7 +152,7 @@ object KeywordReply : PluginBase() {
             onCommand {
                 if (it.count() != 0)
                     return@onCommand false
-                    loadConfig(config)
+                KeywordReplyConfig.loadConfig()
                 return@onCommand true
             }
         }
@@ -176,6 +160,6 @@ object KeywordReply : PluginBase() {
 
     override fun onDisable() {
         super.onDisable()
-        saveConfig()
+        KeywordReplyConfig.saveConfig()
     }
 }
