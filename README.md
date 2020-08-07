@@ -5,11 +5,13 @@
 ## 使用
 将本插件的 release jar 放置在 mirai 的 plugins 文件夹下，然后使用 reload 命令要求重载插件或者重启 mirai-console 即可。
 
-本插件会注册以下三个命令
+本插件会注册以下命令:
 
 - keywordAdd 添加关键词触发规则
 - keywordRemove 删除关键词触发规则
 - keywordList 列出关键词触发规则
+- keywordLoad 加载关键词触发规则（维护用）
+- keywordSave 保存关键词触发规则（维护用）
 
 这些命令如何使用可以直接查看调用这些功能时对应的描述。
 

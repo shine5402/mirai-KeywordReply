@@ -3,6 +3,7 @@ package top.shine5402
 import net.mamoe.mirai.console.command.registerCommand
 import net.mamoe.mirai.console.plugins.Config
 import net.mamoe.mirai.console.plugins.PluginBase
+import net.mamoe.mirai.console.plugins.ToBeRemoved
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.GroupMessageEvent
@@ -146,13 +147,28 @@ object KeywordReply : PluginBase() {
             name = "keywordSave"
             alias = listOf("保存关键字", "baocunguanjianzi", "bcgjz")
             description = "触发一次关键字配置保存"
-            usage = "为了方便开发·维护而设的命令。可以使用该命令要求插件保存关键字配置到配置文件。" +
+            usage = "为了方便开发·维护而设的命令。可以使用该命令要求插件保存关键字配置到配置文件。\n" +
                     "keywordSave 有“保存关键字”、“baocunguanjianzi”、“bcgjz”几个别名。"
             onCommand {
                 if (it.count() != 0)
                     return@onCommand false
                 saveConfig()
                 sendMessage("关键词配置保存完成。")
+                return@onCommand true
+            }
+        }
+
+        registerCommand{
+            name = "keywordLoad"
+            alias = listOf("读取关键字", "duquguanjianzi", "dqgjz")
+            description = "触发一次关键字配置读取"
+            usage = "为了方便开发·维护而设的命令。可以使用该命令要求插件读取配置文件中的关键字配置。\n" +
+                    "keywordLoad 有“读取关键字”、“duquguanjianzi”、“dqgjz”几个别名。" +
+                    "请注意，使用此命令会导致没有保存的关键字配置丢失。"
+            onCommand {
+                if (it.count() != 0)
+                    return@onCommand false
+                    loadConfig(config)
                 return@onCommand true
             }
         }

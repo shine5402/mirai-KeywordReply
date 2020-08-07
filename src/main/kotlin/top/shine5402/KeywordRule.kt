@@ -1,6 +1,7 @@
 package top.shine5402
 
 import net.mamoe.mirai.console.plugins.ConfigSection
+import net.mamoe.mirai.console.plugins.ToBeRemoved
 import net.mamoe.mirai.message.data.*
 import java.lang.RuntimeException
 
@@ -15,7 +16,7 @@ abstract class KeywordRule(val keyword: String, val reply: String, val matchGrou
                 && keyMatching(message)
     }
 
-    fun groupMatching(source: MessageSource): Boolean = source.isAboutGroup() && matchGroupID.contains(source.fromId)
+    fun groupMatching(source: MessageSource): Boolean = source is OnlineMessageSource.Incoming.FromGroup && matchGroupID.contains(source.group.id)
 
     abstract fun keyMatching(message: String): Boolean
 
@@ -89,7 +90,7 @@ class ExactKeywordRule(keyword: String, reply: String, matchGroupID: List<Long> 
         get() = "exact"
 
     override fun keyMatching(message: String): Boolean {
-        return message.toString() == keyword
+        return message == keyword
     }
 }
 
@@ -98,7 +99,7 @@ class VagueKeywordRule(keyword: String, reply: String, matchGroupID: List<Long>)
         get() = "vague"
 
     override fun keyMatching(message: String): Boolean {
-        return message.toString().contains(keyword)
+        return message.contains(keyword)
     }
 }
 
