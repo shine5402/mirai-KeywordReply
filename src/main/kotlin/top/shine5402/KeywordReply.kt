@@ -161,17 +161,26 @@ object KeywordReply : PluginBase() {
             name = "keywordRemove"
             alias = listOf("关键字删除", "guanjianzishanchu", "gjzsc")
             description = "删除一条关键字回复规则"
-            usage = "格式：/keywordRemove <规则序号>\n" +
+            usage = "格式：/keywordRemove <规则序号 或者 all>\n" +
                     "请不要输入尖括号，尖括号只是为了让帮助中的参数更明显。\n" +
                     "keywordRemove 有“关键字删除”、“guanjianzishanchu”、“gjzsc”几个别名。\n" +
-                    "序号请参照keywordList输出的序号。"
+                    "序号请参照keywordList输出的序号。如果输入的是all，那么所有规则都会被删除。"
             onCommand {
                 if (it.count() != 1)
                     return@onCommand false
+
+                if (it[0] == "all") {
+                    sendMessage("规则列表已被清空。以下是被删除的规则：\n${keywordRules.mapIndexed { i, rule ->
+                        "${i + 1}| ${rule.toStringHumanFriendly()}"
+                    }.joinToString("\n")}")
+                    keywordRules.clear()
+                    return@onCommand true
+                }
+
                 val id = (it[0].toIntOrNull() ?: 0) - 1
                 if (id == -1 && id !in 0..keywordRules.count())
                     return@onCommand false
-                sendMessage("该规则已经被删除：${keywordRules.removeAt(id).toStringHumanFriendly()}")
+                sendMessage("该规则已经被删除：\n${keywordRules.removeAt(id).toStringHumanFriendly()}")
                 return@onCommand true
             }
         }

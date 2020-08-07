@@ -2,7 +2,7 @@ package top.shine5402
 
 import java.lang.RuntimeException
 
-abstract class KeywordRuleAddWorker(val keywordRules:MutableList<KeywordRule>) {
+abstract class KeywordRuleAddWorker(val keywordRules: MutableList<KeywordRule>) {
     /**
      * @return 给用户的回执信息
      * */
@@ -11,7 +11,7 @@ abstract class KeywordRuleAddWorker(val keywordRules:MutableList<KeywordRule>) {
 
     fun add(type: String, keyword: String, replies: MutableList<String>, matchGroupID: List<Long>): String {
         KeywordReply.findRulesByKeyword(keyword).filter {
-                it.matchGroupID.sorted() == matchGroupID.sorted()
+            it.matchGroupID.sorted() == matchGroupID.sorted()
         }.map {
             if (it.type != type)
                 throw RuleTypeConflictException(it)
@@ -33,22 +33,23 @@ abstract class KeywordRuleAddWorker(val keywordRules:MutableList<KeywordRule>) {
 
 }
 
-class RuleTypeConflictException(val existRule: KeywordRule) : RuntimeException("There has been a same keyword rule with different type.")
+class RuleTypeConflictException(val existRule: KeywordRule) :
+    RuntimeException("There has been a same keyword rule with different type.")
 
-class AddKeywordRuleAddWorker(keywordRules:MutableList<KeywordRule>) : KeywordRuleAddWorker(keywordRules){
+class AddKeywordRuleAddWorker(keywordRules: MutableList<KeywordRule>) : KeywordRuleAddWorker(keywordRules) {
     override fun modifyReply(rule: KeywordRule, newReplies: List<String>): String? {
         return null
     }
 }
 
-class MergeKeywordRuleAddWorker(keywordRules: MutableList<KeywordRule>):KeywordRuleAddWorker(keywordRules){
+class MergeKeywordRuleAddWorker(keywordRules: MutableList<KeywordRule>) : KeywordRuleAddWorker(keywordRules) {
     override fun modifyReply(rule: KeywordRule, newReplies: List<String>): String? {
         rule.replies.addAll(newReplies)
         return "关键字规则已经和之前相同关键字的合并。\n" + rule.toStringHumanFriendly()
     }
 }
 
-class CoverKeywordRuleAddWorker(keywordRules: MutableList<KeywordRule>):KeywordRuleAddWorker(keywordRules){
+class CoverKeywordRuleAddWorker(keywordRules: MutableList<KeywordRule>) : KeywordRuleAddWorker(keywordRules) {
     override fun modifyReply(rule: KeywordRule, newReplies: List<String>): String? {
         rule.replies.clear()
         rule.replies.addAll(newReplies)
@@ -56,7 +57,7 @@ class CoverKeywordRuleAddWorker(keywordRules: MutableList<KeywordRule>):KeywordR
     }
 }
 
-class KeepKeywordRuleAddWorker(keywordRules: MutableList<KeywordRule>):KeywordRuleAddWorker(keywordRules){
+class KeepKeywordRuleAddWorker(keywordRules: MutableList<KeywordRule>) : KeywordRuleAddWorker(keywordRules) {
     override fun modifyReply(rule: KeywordRule, newReplies: List<String>): String? {
         return "该关键词已存在，规则没有被修改。\n" + rule.toStringHumanFriendly()
     }
