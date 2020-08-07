@@ -10,11 +10,14 @@ abstract class KeywordRuleAddWorker(val keywordRules:MutableList<KeywordRule>) {
     protected abstract fun modifyReply(rule: KeywordRule, newReplies: List<String>): String?
 
     fun add(type: String, keyword: String, replies: MutableList<String>, matchGroupID: List<Long>): String {
-        KeywordReply.findRuleByKeyword(keyword)?.let {
+        KeywordReply.findRulesByKeyword(keyword).filter {
+                it.matchGroupID.sorted() == matchGroupID.sorted()
+        }.map {
             if (it.type != type)
                 throw RuleTypeConflictException(it)
             return (modifyReply(it, replies) ?: doAdd(type, keyword, replies, matchGroupID))
         }
+
         return doAdd(type, keyword, replies, matchGroupID)
     }
 

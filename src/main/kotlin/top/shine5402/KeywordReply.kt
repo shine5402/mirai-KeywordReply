@@ -12,11 +12,17 @@ import net.mamoe.mirai.message.data.content
 object KeywordReply : PluginBase() {
 
     val keywordRules: MutableList<KeywordRule> = mutableListOf()
-    val keywordRulesKeywordList
+    private val keywordRulesKeywordList
         get() = keywordRules.map { it.keyword }
 
     fun findRuleByKeyword(keyword: String): KeywordRule? {
-        return keywordRules.getOrNull(keywordRulesKeywordList.indexOf(keyword))
+        return findRulesByKeyword(keyword).getOrNull(0)
+    }
+
+    fun findRulesByKeyword(keyword: String): List<KeywordRule> {
+        return keywordRulesKeywordList.filter { it == keyword }
+            .map { keywordRulesKeywordList.indexOf(it) }
+            .map { keywordRules[it] }
     }
 
     override fun onLoad() {
@@ -58,8 +64,8 @@ object KeywordReply : PluginBase() {
             name = "keywordAdd"
             alias = listOf("guanjianzitianjia", "关键字添加", "gjztj")
             description = "添加一条关键字回复规则"
-            usage = "格式：/keywordAdd <类型> <关键字> <回复> <(可选的)以分号分隔的群号列表> <(可选的)冲突模式>\n" +
-                    "请不要输入尖括号，尖括号只是为了让参数更明显。\n" +
+            usage = "格式：/keywordAdd <类型> <关键字> <回复> <(可选的)以分号分隔的群号列表，此条规则的开启群> <(可选的)冲突模式>\n" +
+                    "请不要输入尖括号，尖括号只是为了让帮助中的参数更明显。\n" +
                     "keywordAdd 命令的别名：“guanjianzitianjia”、“关键字”、“gjztj”\n" +
                     "目前类型支持：exact（完全匹配）、vague（模糊匹配）、regex（正则匹配）\n" +
                     "类型的对应中文和中文去掉“匹配”也是其别名。\n" +
@@ -69,7 +75,11 @@ object KeywordReply : PluginBase() {
                     "冲突模式是指在关键字和类型相同时，插件应如何处理这种情况。" +
                     "可选值为：merge（合并）、cover（覆盖）、keep（保持）、add（追加）。默认值是 merge。\n" +
                     "merge 会将对应的新回复合并到关键字的回复列表中，cover 会使用新回复覆盖原先设置的回复，keep 则保持原有的回复，" +
-                    "add 则是将其作为独立的一条新回复规则（将与旧的同时触发）。"
+                    "add 则是将其作为独立的一条新回复规则（将与旧的同时触发）。\n" +
+                    "如果现存规则中只有开启群不同、关键词相同的规则，无论指派什么冲突模式，插件都会将其视为add。" +
+                    "只要现存规则中有开启群相同、关键词也相同的规则，那么就会遵循指定设置。" +
+                    "且多条情况下，会对每一条都进行相应处理\n"
+
             onCommand {
                 if (it.count() !in 3..5)
                     return@onCommand false
@@ -106,7 +116,7 @@ object KeywordReply : PluginBase() {
                 if (groupsString.isNotEmpty() && groups.isEmpty())
                     return@onCommand false
                 //处理冲突模式
-                addWorker = when (conflictModeString){
+                addWorker = when (conflictModeString) {
                     "merge", "合并" -> MergeKeywordRuleAddWorker(keywordRules)
                     "cover", "覆盖" -> CoverKeywordRuleAddWorker(keywordRules)
                     "keep", "保持" -> KeepKeywordRuleAddWorker(keywordRules)
@@ -117,7 +127,7 @@ object KeywordReply : PluginBase() {
                     val logMessage = addWorker.add(type, keyword, replies, groups)
                     sendMessage(logMessage)
                     logger.info(logMessage)
-                } catch (e : RuleTypeConflictException){
+                } catch (e: RuleTypeConflictException) {
                     sendMessage("您输入的规则和现有的相同关键字规则的匹配模式不同，规则未做更改。")
                 }
                 return@onCommand true
@@ -152,7 +162,7 @@ object KeywordReply : PluginBase() {
             alias = listOf("关键字删除", "guanjianzishanchu", "gjzsc")
             description = "删除一条关键字回复规则"
             usage = "格式：/keywordRemove <规则序号>\n" +
-                    "请不要输入尖括号，尖括号只是为了让参数更明显。\n" +
+                    "请不要输入尖括号，尖括号只是为了让帮助中的参数更明显。\n" +
                     "keywordRemove 有“关键字删除”、“guanjianzishanchu”、“gjzsc”几个别名。\n" +
                     "序号请参照keywordList输出的序号。"
             onCommand {

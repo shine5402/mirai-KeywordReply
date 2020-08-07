@@ -1,9 +1,7 @@
 package top.shine5402
 
-import net.mamoe.mirai.console.plugins.Config
-
 object KeywordReplyConfig {
-    val config = KeywordReply.loadConfig("settings.yml")
+    private val config = KeywordReply.loadConfig("settings.yml")
     var configVersion
         get() = config["version"].toString().toIntOrNull() ?: 1
         set(value: Int) { config["version"] = value }
@@ -23,7 +21,7 @@ object KeywordReplyConfig {
         config.save()
     }
 
-    val supportedVersion = 2
+    private const val supportedVersion = 2
     private fun upgradeConfig(){
         if (configVersion > supportedVersion){
             KeywordReply.logger.warning("配置文件版本高于此 KeywordReply 支持的版本。程序将继续运作，但很有可能出现错误。\n" +
