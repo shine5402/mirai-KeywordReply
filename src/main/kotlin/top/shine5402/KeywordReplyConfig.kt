@@ -18,15 +18,32 @@ object KeywordReplyConfig {
     }
 
     fun saveConfig() {
-        configVersion = 1
+        configVersion = 2
         config.set("rules", KeywordReply.keywordRules.map { it.toConfigSection()})
         config.save()
     }
 
-    val supportedVersion = 1
+    val supportedVersion = 2
     private fun upgradeConfig(){
-        if (configVersion > supportedVersion)
+        if (configVersion > supportedVersion){
             KeywordReply.logger.warning("配置文件版本高于此 KeywordReply 支持的版本。程序将继续运作，但很有可能出现错误。\n" +
                     "并且请注意备份当前配置文件，否则在 KeywordReply 退出/被要求保存配置文件时，当前配置文件将丢失。")
+        return
+        }
+
+        if (configVersion == supportedVersion){
+            return
+        }
+
+        when (configVersion){
+            1 -> {
+                val keywordRulesConfigSection = if (config.exist("rules")) config.getConfigSectionList("rules") else listOf()
+                    for (ruleConfig in keywordRulesConfigSection){
+                        val reply = ruleConfig.getString("reply")
+                        ruleConfig["replies"] = listOf(reply)
+                        ruleConfig.remove("reply")
+                    }
+            }
+        }
     }
 }

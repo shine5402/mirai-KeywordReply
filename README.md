@@ -3,7 +3,7 @@
 本仓库是为 [mirai-console](https://github.com/mamoe/mirai-console) 开发的关键字自动回复插件。
 
 ## 使用
-将本插件的 release jar 放置在 mirai 的 plugins 文件夹下，然后使用 reload 命令要求重载插件或者重启 mirai-console 即可。
+将本插件的 [release jar](https://github.com/shine5402/mirai-KeywordReply/releases) 放置在 mirai 的 plugins 文件夹下，然后使用 reload 命令要求重载插件或者重启 mirai-console 即可。
 
 本插件会注册以下命令:
 
@@ -16,9 +16,9 @@
 这些命令如何使用可以直接查看调用这些功能时对应的描述。
 
 ## 兼容性
-本插件的目标mirai版本为：core：1.0.0 console：0.5.2
+本插件的目标与测试 mirai 版本为：core：1.0.0；console：0.5.2。
 
-其他版本的mirai和mirai-console可能无法正常运作，还请自行测试。
+其他版本的 mirai 和 mirai-console 可能无法正常运作，还请自行测试。
 
 ## 许可证
 本插件以 GNU AGPL 3.0 分发。详见 [LICENSE](LICENSE)。
