@@ -73,11 +73,12 @@ object KeywordReply : PluginBase() {
             onCommand {
                 if (it.count() !in 3..5)
                     return@onCommand false
+                //读取用户所提供的参数
                 var type = it[0]
                 val keyword = it[1]
                 val replies = mutableListOf(it[2])
-                lateinit var groupsString: String
-                lateinit var conflictModeString: String
+                var groupsString: String = ""
+                var conflictModeString: String = "merge"
                 lateinit var addWorker: KeywordRuleAddWorker
                 when (it.count()) {
                     4 -> when (it[3]) {

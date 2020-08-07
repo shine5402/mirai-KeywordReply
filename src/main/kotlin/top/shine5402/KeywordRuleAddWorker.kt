@@ -13,8 +13,7 @@ abstract class KeywordRuleAddWorker(val keywordRules:MutableList<KeywordRule>) {
         KeywordReply.findRuleByKeyword(keyword)?.let {
             if (it.type != type)
                 throw RuleTypeConflictException(it)
-            return (modifyReply(it, replies) ?: doAdd(type, keyword, replies, matchGroupID)) +
-                    KeywordReply.keywordRules.last().toStringHumanFriendly()
+            return (modifyReply(it, replies) ?: doAdd(type, keyword, replies, matchGroupID))
         }
         return doAdd(type, keyword, replies, matchGroupID)
     }
@@ -42,7 +41,7 @@ class AddKeywordRuleAddWorker(keywordRules:MutableList<KeywordRule>) : KeywordRu
 class MergeKeywordRuleAddWorker(keywordRules: MutableList<KeywordRule>):KeywordRuleAddWorker(keywordRules){
     override fun modifyReply(rule: KeywordRule, newReplies: List<String>): String? {
         rule.replies.addAll(newReplies)
-        return "关键字规则已经和之前相同关键字的合并。\n"
+        return "关键字规则已经和之前相同关键字的合并。\n" + rule.toStringHumanFriendly()
     }
 }
 
@@ -50,12 +49,12 @@ class CoverKeywordRuleAddWorker(keywordRules: MutableList<KeywordRule>):KeywordR
     override fun modifyReply(rule: KeywordRule, newReplies: List<String>): String? {
         rule.replies.clear()
         rule.replies.addAll(newReplies)
-        return "新的关键词规则已经覆盖旧的、有相同关键词的规则。\n"
+        return "新的关键词规则已经覆盖旧的、有相同关键词的规则。\n" + rule.toStringHumanFriendly()
     }
 }
 
 class KeepKeywordRuleAddWorker(keywordRules: MutableList<KeywordRule>):KeywordRuleAddWorker(keywordRules){
     override fun modifyReply(rule: KeywordRule, newReplies: List<String>): String? {
-        return "该关键词已存在，规则没有被修改。\n"
+        return "该关键词已存在，规则没有被修改。\n" + rule.toStringHumanFriendly()
     }
 }
