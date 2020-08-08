@@ -9,6 +9,7 @@ import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.message.MessageEvent
 import net.mamoe.mirai.message.TempMessageEvent
 import net.mamoe.mirai.message.data.content
+import kotlin.properties.Delegates
 
 object KeywordReply : PluginBase() {
 
@@ -60,6 +61,11 @@ object KeywordReply : PluginBase() {
         registerCommands()
     }
 
+    private val possibleConflictModes = listOf(
+        "merge", "cover", "keep", "add",
+        "合并", "覆盖", "保持", "追加"
+    )
+
     private fun registerCommands() {
         registerCommand {
             name = "keywordAdd"
@@ -92,8 +98,7 @@ object KeywordReply : PluginBase() {
                 var conflictModeString: String = "merge"
                 fun judgeParameter4() {
                     when (it[3]) {
-                        "merge", "cover", "keep", "add",
-                        "合并", "覆盖", "保持", "追加" -> {
+                        in possibleConflictModes -> {
                             conflictModeString = it[3]
                         }
                         else -> groupsString = it[3]
@@ -133,21 +138,24 @@ object KeywordReply : PluginBase() {
                 var separator = "*"
                 var groupsString = ""
                 var conflictModeString = "merge"
+
+
                 fun judgeParameter4() {
                     if (it[3].count() == 1) {
                         separator = it[3]
-                    } else when (it[3]) {
-                        "merge", "cover", "keep", "add",
-                        "合并", "覆盖", "保持", "追加" -> {
-                            conflictModeString = it[3]
+                    } else {
+                        when (it[3]) {
+                            in possibleConflictModes -> {
+                                conflictModeString = it[3]
+                            }
+                            else -> groupsString = it[3]
                         }
-                        else -> groupsString = it[3]
                     }
                 }
+
                 fun judgeParameter5() {
                     when (it[4]) {
-                        "merge", "cover", "keep", "add",
-                        "合并", "覆盖", "保持", "追加" -> {
+                        in possibleConflictModes -> {
                             conflictModeString = it[4]
                         }
                         else -> groupsString = it[4]
@@ -161,7 +169,7 @@ object KeywordReply : PluginBase() {
                     }
                     6 -> {
                         separator = it[3]
-                        if (separator.count() != 1)
+                        if (separator.count() > 1)
                             return@onCommand false
                         groupsString = it[4]
                         conflictModeString = it[5]
@@ -171,6 +179,110 @@ object KeywordReply : PluginBase() {
                 val replies = repliesString.split(separator).toMutableList()
 
                 return@onCommand doAdd(type, groupsString, conflictModeString, keyword, replies)
+            }
+        }
+
+        registerCommand {
+            name = "keywordModify"
+            alias = listOf("修改关键字", "xiugaiguanjianzi", "xggjz")
+            description = "对关键字规则进行修改"
+            usage = "格式：/keywordModify <(可选的)操作> <规则序号> <被修改参数> <新值> <(可选的)分隔符>\n" +
+                    "请不要输入尖括号，尖括号只是为了让帮助中的参数更明显。\n" +
+                    "操作有：cover（覆盖）【默认值】、append（追加）、remove（删除）、clear（清空）。" +
+                    "append和remove只对列表形式的参数有效，clear 只对开启群列表有效，无效情况下将视为 cover。\n" +
+                    "序号请参照keywordList输出的序号。\n" +
+                    "被修改参数可能值为：type（类型）、keyword（关键字）、replies（回复）、groups（开启群）。\n" +
+                    "分隔符不指定时默认为*。分隔符只能为一个字符。"
+            onCommand {
+                if (it.count() !in 3..5) {
+                    return@onCommand false
+                }
+                var action = "cover"
+                var id by Delegates.notNull<Int>()
+                var param: String = ""
+                var value: String = ""
+                var separator = "*"
+
+                val possibleActions = listOf("cover", "覆盖", "append", "追加", "remove", "删除", "clear", "清空")
+                val possibleParameters =
+                    listOf("type", "类型", "keyword", "关键字", "replies", "回复", "groups", "开启群")
+
+                //填入参数
+                when (it.count()) {
+                    3 -> {
+                        id = it[0].toIntOrNull() ?: -1
+                        param = it[1]
+                        value = it[2]
+                    }
+                    4 -> {
+
+                        when (it[0]) {
+                            in possibleActions -> {
+                                action = it[0]
+                            }
+                            else -> id = it[0].toIntOrNull() ?: return@onCommand false
+                        }
+
+                        when (it[1]) {
+                            in possibleActions -> {
+                                action = it[1]
+                            }
+                            in possibleParameters -> {
+                                param = it[1]
+                            }
+                            else -> return@onCommand false
+                        }
+                        when (it[2]) {
+                            in possibleParameters -> {
+                                param = it[2]
+                            }
+                            else -> value = it[2]
+                        }
+                        if (value.isEmpty()) {
+                            value = it[4]
+                        } else {
+                            separator = it[4]
+                            if (separator.count() > 1)
+                                return@onCommand false
+                        }
+                    }
+                    5 -> {
+                        action = it[0]
+                        if (action !in possibleActions)
+                            return@onCommand false
+                        id = it[1].toIntOrNull() ?: return@onCommand false
+                        param = it[2]
+                        if (param !in possibleParameters)
+                            return@onCommand false
+                        value = it[3]
+                        separator = it[4]
+                        if (separator.count() > 1)
+                            return@onCommand false
+                    }
+                }
+
+                //处理操作别名
+                action = when (action){
+                    "cover", "覆盖" -> "cover"
+                    "append", "追加" -> "append"
+                    "remove", "删除" -> "remove"
+                    "clear", "清空" -> "clear"
+                    else -> return@onCommand false
+                }
+                //处理参数别名
+                param = when (param){
+                    "type", "类型" -> "type"
+                    "keyword", "关键字" -> "keyword"
+                    "replies", "回复" -> "replies"
+                    "groups", "开启群" -> "groups"
+                    else -> return@onCommand false
+                }
+
+                KeywordRuleModifyWorkerFactory.get(action).modify(keywordRules, id, param, value, separator)
+
+                sendMessage("已经对关键字做出修改。\n" +
+                        "$id| ${keywordRules[id].toStringHumanFriendly()}")
+                return@onCommand true
             }
         }
 
@@ -204,7 +316,8 @@ object KeywordReply : PluginBase() {
             usage = "格式：/keywordRemove <规则序号 或者 all>\n" +
                     "请不要输入尖括号，尖括号只是为了让帮助中的参数更明显。\n" +
                     "keywordRemove 有“删除关键字”、“shanchuguanjianzi”、“scgjz”几个别名。\n" +
-                    "序号请参照keywordList输出的序号。如果输入的是all，那么所有规则都会被删除。"
+                    "序号请参照keywordList输出的序号。请注意删除操作可能会对序号顺序产生改变。\n" +
+                    "如果输入的是all，那么所有规则都会被删除。"
             onCommand {
                 if (it.count() != 1)
                     return@onCommand false

@@ -40,6 +40,9 @@ object KeywordReplyConfig {
                         val reply = ruleConfig.getString("reply")
                         ruleConfig["replies"] = listOf(reply)
                         ruleConfig.remove("reply")
+                        val matchGroupID = ruleConfig.getLongList("matchGroupID")
+                        ruleConfig["groups"] = matchGroupID
+                        ruleConfig.remove("matchGroupID")
                     }
             }
         }

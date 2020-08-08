@@ -11,7 +11,7 @@ abstract class KeywordRuleAddWorker(val keywordRules: MutableList<KeywordRule>) 
 
     fun add(type: String, keyword: String, replies: MutableList<String>, matchGroupID: List<Long>): String {
         KeywordReply.findRulesByKeyword(keyword).filter {
-            it.matchGroupID.sorted() == matchGroupID.sorted()
+            it.groups.sorted() == matchGroupID.sorted()
         }.map {
             if (it.type != type)
                 throw RuleTypeConflictException(it)
