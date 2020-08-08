@@ -94,8 +94,8 @@ object KeywordReply : PluginBase() {
                 val type = it[0]
                 val keyword = it[1]
                 val replies = mutableListOf(it[2])
-                var groupsString: String = ""
-                var conflictModeString: String = "merge"
+                var groupsString = ""
+                var conflictModeString = "merge"
                 fun judgeParameter4() {
                     when (it[3]) {
                         in possibleConflictModes -> {
@@ -199,8 +199,8 @@ object KeywordReply : PluginBase() {
                 }
                 var action = "cover"
                 var id by Delegates.notNull<Int>()
-                var param: String = ""
-                var value: String = ""
+                var param = ""
+                var value = ""
                 var separator = "*"
 
                 val possibleActions = listOf("cover", "覆盖", "append", "追加", "remove", "删除", "clear", "清空")
@@ -210,27 +210,30 @@ object KeywordReply : PluginBase() {
                 //填入参数
                 when (it.count()) {
                     3 -> {
-                        id = it[0].toIntOrNull() ?: -1
-                        param = it[1]
-                        value = it[2]
+                        if (it[0] == "clear" && it[2] == "group") {
+                            action = "clear"
+                            id = (it[1].toIntOrNull() ?: 0) - 1
+                            param = "group"
+                        } else {
+                            id = (it[0].toIntOrNull() ?: 0) - 1
+                            param = it[1]
+                            value = it[2]
+                        }
                     }
                     4 -> {
-
                         when (it[0]) {
                             in possibleActions -> {
                                 action = it[0]
                             }
-                            else -> id = it[0].toIntOrNull() ?: return@onCommand false
+                            else -> id = (it[0].toIntOrNull() ?: return@onCommand false) - 1
                         }
 
                         when (it[1]) {
-                            in possibleActions -> {
-                                action = it[1]
-                            }
                             in possibleParameters -> {
                                 param = it[1]
                             }
-                            else -> return@onCommand false
+                            else -> id = (it[1].toIntOrNull() ?: return@onCommand false) - 1
+
                         }
                         when (it[2]) {
                             in possibleParameters -> {
@@ -239,9 +242,9 @@ object KeywordReply : PluginBase() {
                             else -> value = it[2]
                         }
                         if (value.isEmpty()) {
-                            value = it[4]
+                            value = it[3]
                         } else {
-                            separator = it[4]
+                            separator = it[3]
                             if (separator.count() > 1)
                                 return@onCommand false
                         }
@@ -250,7 +253,7 @@ object KeywordReply : PluginBase() {
                         action = it[0]
                         if (action !in possibleActions)
                             return@onCommand false
-                        id = it[1].toIntOrNull() ?: return@onCommand false
+                        id = (it[1].toIntOrNull() ?: return@onCommand false) - 1
                         param = it[2]
                         if (param !in possibleParameters)
                             return@onCommand false
@@ -261,8 +264,13 @@ object KeywordReply : PluginBase() {
                     }
                 }
 
+                if (id >= keywordRules.count()) {
+                    sendMessage("不存在给定序号。请检查后重试")
+                    return@onCommand true
+                }
+
                 //处理操作别名
-                action = when (action){
+                action = when (action) {
                     "cover", "覆盖" -> "cover"
                     "append", "追加" -> "append"
                     "remove", "删除" -> "remove"
@@ -270,7 +278,7 @@ object KeywordReply : PluginBase() {
                     else -> return@onCommand false
                 }
                 //处理参数别名
-                param = when (param){
+                param = when (param) {
                     "type", "类型" -> "type"
                     "keyword", "关键字" -> "keyword"
                     "replies", "回复" -> "replies"
@@ -278,10 +286,24 @@ object KeywordReply : PluginBase() {
                     else -> return@onCommand false
                 }
 
+                if (param == "type") {
+                    value = when (value) {
+                        "exact", "完全匹配", "完全" -> "exact"
+                        "vague", "模糊匹配", "模糊" -> "vague"
+                        "regex", "正则匹配", "正则" -> "regex"
+                        else -> {
+                            sendMessage("提供的类型值不正确。")
+                            return@onCommand true
+                        }
+                    }
+                }
+
                 KeywordRuleModifyWorkerFactory.get(action).modify(keywordRules, id, param, value, separator)
 
-                sendMessage("已经对关键字做出修改。\n" +
-                        "$id| ${keywordRules[id].toStringHumanFriendly()}")
+                sendMessage(
+                    "已经对关键字做出修改。\n" +
+                            "${id + 1}| ${keywordRules[id].toStringHumanFriendly()}"
+                )
                 return@onCommand true
             }
         }
