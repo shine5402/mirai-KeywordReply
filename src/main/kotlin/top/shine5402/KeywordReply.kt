@@ -1,5 +1,6 @@
 package top.shine5402
 
+import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.registerCommand
 import net.mamoe.mirai.console.plugins.PluginBase
 import net.mamoe.mirai.event.subscribeAlways
@@ -62,11 +63,11 @@ object KeywordReply : PluginBase() {
     private fun registerCommands() {
         registerCommand {
             name = "keywordAdd"
-            alias = listOf("guanjianzitianjia", "关键字添加", "gjztj")
+            alias = listOf("tianjiaguanjianzi", "添加关键字", "tjgjz")
             description = "添加一条关键字回复规则"
             usage = "格式：/keywordAdd <类型> <关键字> <回复> <(可选的)以分号分隔的群号列表，此条规则的开启群> <(可选的)冲突模式>\n" +
                     "请不要输入尖括号，尖括号只是为了让帮助中的参数更明显。\n" +
-                    "keywordAdd 命令的别名：“guanjianzitianjia”、“关键字”、“gjztj”\n" +
+                    "keywordAdd 命令的别名：“tianjiaguanjianzi”、“添加关键字”、“tjgjz”\n" +
                     "目前类型支持：exact（完全匹配）、vague（模糊匹配）、regex（正则匹配）\n" +
                     "类型的对应中文和中文去掉“匹配”也是其别名。\n" +
                     "请注意关键字和回复中不能出现空格（因为要被命令解析），如果有需要，可以自己修改settings.yml文件中存储的规则。\n" +
@@ -78,59 +79,98 @@ object KeywordReply : PluginBase() {
                     "add 则是将其作为独立的一条新回复规则（将与旧的同时触发）。\n" +
                     "如果现存规则中只有开启群不同、关键词相同的规则，无论指派什么冲突模式，插件都会将其视为add。" +
                     "只要现存规则中有开启群相同、关键词也相同的规则，那么就会遵循指定设置。" +
-                    "且多条情况下，会对每一条都进行相应处理\n"
+                    "且多条情况下，会对每一条都进行相应处理。\n"
 
             onCommand {
                 if (it.count() !in 3..5)
                     return@onCommand false
                 //读取用户所提供的参数
-                var type = it[0]
+                val type = it[0]
                 val keyword = it[1]
                 val replies = mutableListOf(it[2])
                 var groupsString: String = ""
                 var conflictModeString: String = "merge"
-                lateinit var addWorker: KeywordRuleAddWorker
-                when (it.count()) {
-                    4 -> when (it[3]) {
+                fun judgeParameter4() {
+                    when (it[3]) {
                         "merge", "cover", "keep", "add",
                         "合并", "覆盖", "保持", "追加" -> {
                             conflictModeString = it[3]
                         }
                         else -> groupsString = it[3]
                     }
+                }
+
+                when (it.count()) {
+                    4 -> judgeParameter4()
                     5 -> {
                         groupsString = it[3]
                         conflictModeString = it[4]
                     }
                 }
 
-                //处理类型别名
-                when (type) {
-                    "exact", "完全匹配", "完全" -> type = "exact"
-                    "vague", "模糊匹配", "模糊" -> type = "vague"
-                    "regex", "正则匹配", "正则" -> type = "regex"
-                    else -> return@onCommand false
-                }
-                //处理群号
-                val groups = groupsString.split(";").map { it.toLongOrNull() ?: 0 }.filter { it != 0L }
-                if (groupsString.isNotEmpty() && groups.isEmpty())
+                return@onCommand doAdd(type, groupsString, conflictModeString, keyword, replies)
+            }
+        }
+
+        registerCommand {
+            name = "keywordAddMultipleReply"
+            alias = listOf("添加多回复关键字", "tianjiaduohuifuguanjianzi", "tjdhfgjz")
+            description = "添加一条关键字回复规则，其回复为多个回复"
+            usage = "格式：/keywordAddMultipleReply <类型> <关键字> <以分隔符分隔开的多条回复> <(可选的)回复分隔符> " +
+                    "<(可选的)以分号分隔的群号列表，此条规则的开启群> <(可选的)冲突模式>\n" +
+                    "请不要输入尖括号，尖括号只是为了让帮助中的参数更明显。\n" +
+                    "keywordAddMultipleReply 命令的别名：“tianjiaduohuifuguanjianzi”、“添加多回复关键字”、“tjdhfgjz”\n" +
+                    "与keywordAdd命令相同的参数（类型、关键字等）的说明请参见keywordAdd。\n" +
+                    "本命令允许一次输入多条回复，这些回复需要被给定的分隔符分开。分隔符需要是一个字符。默认分隔符为*。\n" +
+                    "请注意本命令依旧不允许在回复间包含空格。"
+            onCommand {
+                if (it.count() !in 3..6)
                     return@onCommand false
-                //处理冲突模式
-                addWorker = when (conflictModeString) {
-                    "merge", "合并" -> MergeKeywordRuleAddWorker(keywordRules)
-                    "cover", "覆盖" -> CoverKeywordRuleAddWorker(keywordRules)
-                    "keep", "保持" -> KeepKeywordRuleAddWorker(keywordRules)
-                    "add", "追加" -> AddKeywordRuleAddWorker(keywordRules)
-                    else -> return@onCommand false
+                //读取用户所提供的参数
+                val type = it[0]
+                val keyword = it[1]
+                val repliesString = it[2]
+                var separator = "*"
+                var groupsString = ""
+                var conflictModeString = "merge"
+                fun judgeParameter4() {
+                    if (it[3].count() == 1) {
+                        separator = it[3]
+                    } else when (it[3]) {
+                        "merge", "cover", "keep", "add",
+                        "合并", "覆盖", "保持", "追加" -> {
+                            conflictModeString = it[3]
+                        }
+                        else -> groupsString = it[3]
+                    }
                 }
-                try {
-                    val logMessage = addWorker.add(type, keyword, replies, groups)
-                    sendMessage(logMessage)
-                    logger.info(logMessage)
-                } catch (e: RuleTypeConflictException) {
-                    sendMessage("您输入的规则和现有的相同关键字规则的匹配模式不同，规则未做更改。")
+                fun judgeParameter5() {
+                    when (it[4]) {
+                        "merge", "cover", "keep", "add",
+                        "合并", "覆盖", "保持", "追加" -> {
+                            conflictModeString = it[4]
+                        }
+                        else -> groupsString = it[4]
+                    }
                 }
-                return@onCommand true
+                when (it.count()) {
+                    4 -> judgeParameter4()
+                    5 -> {
+                        judgeParameter4()
+                        judgeParameter5()
+                    }
+                    6 -> {
+                        separator = it[3]
+                        if (separator.count() != 1)
+                            return@onCommand false
+                        groupsString = it[4]
+                        conflictModeString = it[5]
+                    }
+                }
+
+                val replies = repliesString.split(separator).toMutableList()
+
+                return@onCommand doAdd(type, groupsString, conflictModeString, keyword, replies)
             }
         }
 
@@ -159,11 +199,11 @@ object KeywordReply : PluginBase() {
 
         registerCommand {
             name = "keywordRemove"
-            alias = listOf("关键字删除", "guanjianzishanchu", "gjzsc")
+            alias = listOf("删除关键字", "shanchuguanjianzi", "scgjz")
             description = "删除一条关键字回复规则"
             usage = "格式：/keywordRemove <规则序号 或者 all>\n" +
                     "请不要输入尖括号，尖括号只是为了让帮助中的参数更明显。\n" +
-                    "keywordRemove 有“关键字删除”、“guanjianzishanchu”、“gjzsc”几个别名。\n" +
+                    "keywordRemove 有“删除关键字”、“shanchuguanjianzi”、“scgjz”几个别名。\n" +
                     "序号请参照keywordList输出的序号。如果输入的是all，那么所有规则都会被删除。"
             onCommand {
                 if (it.count() != 1)
@@ -213,6 +253,44 @@ object KeywordReply : PluginBase() {
                 return@onCommand true
             }
         }
+    }
+
+    private suspend fun CommandSender.doAdd(
+        type: String,
+        groupsString: String,
+        conflictModeString: String,
+        keyword: String,
+        replies: MutableList<String>
+    ): Boolean {
+        var type1 = type
+        lateinit var addWorker: KeywordRuleAddWorker
+        //处理类型别名
+        when (type1) {
+            "exact", "完全匹配", "完全" -> type1 = "exact"
+            "vague", "模糊匹配", "模糊" -> type1 = "vague"
+            "regex", "正则匹配", "正则" -> type1 = "regex"
+            else -> return false
+        }
+        //处理群号
+        val groups = groupsString.split(";").map { it.toLongOrNull() ?: 0 }.filter { it != 0L }
+        if (groupsString.isNotEmpty() && groups.isEmpty())
+            return false
+        //处理冲突模式
+        addWorker = when (conflictModeString) {
+            "merge", "合并" -> MergeKeywordRuleAddWorker(keywordRules)
+            "cover", "覆盖" -> CoverKeywordRuleAddWorker(keywordRules)
+            "keep", "保持" -> KeepKeywordRuleAddWorker(keywordRules)
+            "add", "追加" -> AddKeywordRuleAddWorker(keywordRules)
+            else -> return false
+        }
+        try {
+            val logMessage = addWorker.add(type1, keyword, replies, groups)
+            sendMessage(logMessage)
+            logger.info(logMessage)
+        } catch (e: RuleTypeConflictException) {
+            sendMessage("您输入的规则和现有的相同关键字规则的匹配模式不同，规则未做更改。")
+        }
+        return true
     }
 
     override fun onDisable() {
