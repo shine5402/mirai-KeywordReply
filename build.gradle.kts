@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "top.shine5402"
-version = "0.2.0"
+version = "0.2.1"
 
 repositories {
     maven(url = "https://dl.bintray.com/kotlin/kotlin-eap")
