@@ -70,7 +70,7 @@ object KeywordReply : PluginBase() {
         registerCommand {
             name = "keywordAdd"
             alias = listOf("tianjiaguanjianzi", "添加关键字", "tjgjz")
-            description = "添加一条关键字回复规则"
+            description = "添加关键字回复规则"
             usage = "一、指令格式\n" +
                     "【/keywordAdd+触发条件+关键字+回复列表（以分隔符分隔）+回复分隔符（可选）+开启群列表（可选）+冲突模式（可选）】\n" +
                     "> 请将“+”替代为空格。\n" +
@@ -106,7 +106,7 @@ object KeywordReply : PluginBase() {
                     "三、别名说明\n" +
                     "    你可以使用以下别名列表中的别名替代对应值。\n" +
                     "> 主指令名 keywordAdd【 ①tianjiaguanjianzi、②添加关键字、③tjgjz】\n" +
-                    "> 触发条件 exact【①完全匹配、②完全】；vague【①模糊匹配、②模糊】、regex【①正则匹配、②正则】\n" +
+                    "> 触发条件 exact【①完全匹配、②完全】、vague【①模糊匹配、②模糊】、regex【①正则匹配、②正则】\n" +
                     "> 冲突规则 merge【合并】、cover【覆盖】、keep【保持】、add【追加】"
             onCommand {
                 if (it.count() !in 3..6)
@@ -166,13 +166,36 @@ object KeywordReply : PluginBase() {
             name = "keywordModify"
             alias = listOf("修改关键字", "xiugaiguanjianzi", "xggjz")
             description = "对关键字规则进行修改"
-            usage = "格式：/keywordModify <(可选的)操作> <规则序号> <被修改参数> <新值> <(可选的)分隔符>\n" +
-                    "请不要输入尖括号，尖括号只是为了让帮助中的参数更明显。\n" +
-                    "操作有：cover（覆盖）【默认值】、append（追加）、remove（删除）、clear（清空）。" +
-                    "append和remove只对列表形式的参数有效，clear 只对开启群列表有效，无效情况下将视为 cover。\n" +
-                    "序号请参照keywordList输出的序号。\n" +
-                    "被修改参数可能值为：type（类型）、keyword（关键字）、replies（回复）、groups（开启群）。\n" +
-                    "分隔符不指定时默认为*。分隔符只能为一个字符。"
+            usage = "一、指令格式\n" +
+                    "【/keywordModify+操作（可选）+规则序号+被修改参数+新值+分隔符（可选）】\n" +
+                    "> 请将“+”替代为空格。\n" +
+                    "> 新值中不能出现空格！\n" +
+                    "\n" +
+                    "二、参数说明\n" +
+                    "    （一）操作\n" +
+                    "    可能值：cover、append、remove、clear，默认值是cover\n" +
+                    "        ①cover 覆盖旧有的值\n" +
+                    "        ②append 在原有的值上追加，只对回复或者群列表有效\n" +
+                    "        ③remove 删除原有的值中的对应值，只对回复或者群列表有效\n" +
+                    "        ④clear 清空旧有值，只对群列表有效\n" +
+                    "    \n" +
+                    "    （二）规则序号\n" +
+                    "    请参照 keywordList 命令输出的序号。\n" +
+                    "\n" +
+                    "    （三）被修改参数\n" +
+                    "    可能值：type（类型）、keyword（关键字）、replies（回复）、groups（开启群）\n" +
+                    "\n" +
+                    "    （四）新值\n" +
+                    "    对于输入多个值的情况，每个值请使用分隔符分隔。\n" +
+                    "\n" +
+                    "    （五）分隔符\n" +
+                    "    指定 新值 中使用的分隔符，用来隔开列表中的各个值。默认值是“*”。只对回复或者群列表有效。\n" +
+                    "\n" +
+                    "三、别名说明\n" +
+                    "    你可以使用以下别名列表中的别名替代对应值。\n" +
+                    "> 主指令名 keywordModify【 ①修改关键字、②xiugaiguanjianzi、③xggjz】\n" +
+                    "> 操作 cover【覆盖】、append【追加】、remove【删除】、clear【清空】\n" +
+                    "> 被修改参数 type【类型】、keyword【关键字】、replies【回复】、groups【开启群】"
             onCommand {
                 if (it.count() !in 3..5) {
                     return@onCommand false
@@ -292,10 +315,18 @@ object KeywordReply : PluginBase() {
             name = "keywordList"
             alias = listOf("列出关键字", "liechuguanjianzi", "lcgjz")
             description = "列出当前注册的所有关键字回复规则"
-            usage = "格式：/keywordList\n" +
-                    "keywordList 有“列出关键字”、“liechuguanjianzi”、“lcgjz”几个别名。\n" +
-                    "目前版本暂不支持筛选。\n" +
-                    "输出格式为 规则序号| 规则说明"
+            usage = "一、指令格式\n" +
+                    "【/keywordList】\n" +
+                    "> 列出注册的所有关键字规则。\n" +
+                    "> 该命令没有参数。您可以通过在后面追加任何参数来调出本帮助说明。\n" +
+                    "\n" +
+                    "二、输出格式\n" +
+                    "【规则序号| 匹配模式+关键字+回复+开启群】\n" +
+                    "规则序号从1开始。\n" +
+                    "\n" +
+                    "三、别名说明\n" +
+                    "    你可以使用以下别名列表中的别名替代对应值。\n" +
+                    "> 主指令名 keywordList【①列出关键字、②liechuguanjianzi、③lcgjz】"
 
             onCommand {
                 if (it.count() != 0)
@@ -314,17 +345,27 @@ object KeywordReply : PluginBase() {
         registerCommand {
             name = "keywordRemove"
             alias = listOf("删除关键字", "shanchuguanjianzi", "scgjz")
-            description = "删除一条关键字回复规则"
-            usage = "格式：/keywordRemove <规则序号 或者 all>\n" +
-                    "请不要输入尖括号，尖括号只是为了让帮助中的参数更明显。\n" +
-                    "keywordRemove 有“删除关键字”、“shanchuguanjianzi”、“scgjz”几个别名。\n" +
-                    "序号请参照keywordList输出的序号。请注意删除操作可能会对序号顺序产生改变。\n" +
-                    "如果输入的是all，那么所有规则都会被删除。"
+            description = "删除关键字回复规则"
+            usage = "一、指令格式\n" +
+                    "【/keywordRemove+规则序号（或者all）】\n" +
+                    "> 删除指定的关键字规则\n" +
+                    "\n" +
+                    "二、参数说明\n" +
+                    "    （一）\n" +
+                    "        1. 规则序号\n" +
+                    "        请参照 keywordList 命令输出的序号。\n" +
+                    "        2. all\n" +
+                    "        可以通过使用all来清空规则。\n" +
+                    "\n" +
+                    "三、别名说明\n" +
+                    "    你可以使用以下别名列表中的别名替代对应值。\n" +
+                    "> 主指令名 keywordRemove【①删除关键字、②shanchuguanjianzi、③scgjz】\n" +
+                    "> all【所有】"
             onCommand {
                 if (it.count() != 1)
                     return@onCommand false
 
-                if (it[0] == "all") {
+                if (it[0] == "all" || it[0] == "所有") {
                     sendMessage("规则列表已被清空。以下是被删除的规则：\n${keywordRules.mapIndexed { i, rule ->
                         "${i + 1}| ${rule.toStringHumanFriendly()}"
                     }.joinToString("\n")}")
@@ -343,8 +384,14 @@ object KeywordReply : PluginBase() {
             name = "keywordSave"
             alias = listOf("保存关键字", "baocunguanjianzi", "bcgjz")
             description = "触发一次关键字配置保存"
-            usage = "为了方便开发·维护而设的命令。可以使用该命令要求插件保存关键字配置到配置文件。\n" +
-                    "keywordSave 有“保存关键字”、“baocunguanjianzi”、“bcgjz”几个别名。"
+            usage = "一、指令格式\n" +
+                    "【/keywordSave】\n" +
+                    "> 为了方便开发·维护而设的命令。可以使用该命令要求插件保存关键字配置到配置文件。\n" +
+                    "> 该命令没有参数。您可以通过在后面追加任何参数来调出本帮助说明。\n" +
+                    "\n" +
+                    "三、别名说明\n" +
+                    "    你可以使用以下别名列表中的别名替代对应值。\n" +
+                    "> 主指令名 keywordSave【①保存关键字、②baocunguanjianzi、③bcgjz】"
             onCommand {
                 if (it.count() != 0)
                     return@onCommand false
@@ -358,9 +405,15 @@ object KeywordReply : PluginBase() {
             name = "keywordLoad"
             alias = listOf("读取关键字", "duquguanjianzi", "dqgjz")
             description = "触发一次关键字配置读取"
-            usage = "为了方便开发·维护而设的命令。可以使用该命令要求插件读取配置文件中的关键字配置。\n" +
-                    "keywordLoad 有“读取关键字”、“duquguanjianzi”、“dqgjz”几个别名。" +
-                    "请注意，使用此命令会导致没有保存的关键字配置丢失。"
+            usage = "一、指令格式\n" +
+                    "【/keywordLoad】\n" +
+                    "> 为了方便开发·维护而设的命令。可以使用该命令要求插件读取配置文件中的关键字配置。\n" +
+                    "> 请注意，如果你在上次修改过关键字列表之后没有保存，那么使用本命令会丢失更改。\n" +
+                    "> 该命令没有参数。您可以通过在后面追加任何参数来调出本帮助说明。\n" +
+                    "\n" +
+                    "三、别名说明\n" +
+                    "    你可以使用以下别名列表中的别名替代对应值。\n" +
+                    "> 主指令名 keywordLoad【①读取关键字、②duquguanjianzi、③dqgjz】"
             onCommand {
                 if (it.count() != 0)
                     return@onCommand false

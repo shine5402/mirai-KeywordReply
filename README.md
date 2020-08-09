@@ -8,14 +8,13 @@
 本插件会注册以下命令:
 
 - keywordAdd 添加关键词触发规则
-- keywordAddMultipleReply 添加关键词触发规则，其回复参数为多条
 - keywordModify 修改关键词触发规则
 - keywordRemove 删除关键词触发规则
 - keywordList 列出关键词触发规则
 - keywordLoad 加载关键词触发规则（维护用）
 - keywordSave 保存关键词触发规则（维护用）
 
-这些命令如何使用可以直接查看调用这些功能时对应的描述。
+这些命令如何使用可以直接查看调用这些功能时对应的[描述](Parameter Description.txt)。
 
 ## 兼容性
 本插件的目标与测试 mirai 版本为：core：1.1.3；console：0.5.2。
