@@ -71,76 +71,8 @@ object KeywordReply : PluginBase() {
             name = "keywordAdd"
             alias = listOf("tianjiaguanjianzi", "添加关键字", "tjgjz")
             description = "添加一条关键字回复规则"
-            usage = "【/keywordAdd+触发条件+关键字+回复+开启群列表（可选）+冲突模式（可选）】\n" +
-                    "> 请将“+”替代为空格。\n" +
-                    "> 关键字和回复中不能出现空格！请使用标点分隔！如果确实需要使用空格，请手动修改配置文件\n" +
-                    "> 本指令一次只能添加一条回复，一次性添加多条回复可以使用 keywordAddMultipleReply。\n" +
-                    "> 私聊消息（好友·临时）都会被规则响应，群聊消息可以通过开启群列表控制在哪些群开启。\n" +
-                    "\n" +
-                    "二、参数说明\n" +
-                    "    （一）触发条件\n" +
-                    "    指定如何对关键字进行匹配。\n" +
-                    "    可选值：exact、vague、regex。\n" +
-                    "        ① exact：完全匹配，关键字一致时触发；\n" +
-                    "        ② vague：模糊匹配，出现关键字时触发；\n" +
-                    "        ③ regex：正则匹配，满足正则表达式时触发。\n" +
-                    "\n" +
-                    "    （二）开启群列表\n" +
-                    "    该条规则要在哪些群触发。群之间请使用“;”（英文分号）分隔。\n" +
-                    "    不提供的情况下该条规则将在【所有群】开启。\n" +
-                    "    \n" +
-                    "    （三）冲突模式\n" +
-                    "    冲突模式是指在设置回复时，使用与之前设置过的关键字且触发条件类型相同时，将如何处理添加回复，默认值是 merge。\n" +
-                    "    可选值：merge、cover、keep、add\n" +
-                    "        ①merge 会将对应的新回复合并到关键字的回复列表中；\n" +
-                    "        ②cover 会使用新回复覆盖原先设置的回复；\n" +
-                    "        ③keep 则保持原有的回复；\n" +
-                    "        ④add 则是将其作为独立的一条新回复规则（将与旧的同时触发）。\n" +
-                    "    如果现存规则中有多条开启群相同、关键词也相同的规则，每一条都会进行相应的处理。\n" +
-                    "    如果现存规则中仅存在开启群不同、关键词相同的规则，插件会将冲突模式视为add。\n" +
-                    "\n" +
-                    "三、别名说明\n" +
-                    "    你可以使用以下别名列表中的别名替代对应值。\n" +
-                    "> 主指令名 keywordAdd【 ①tianjiaguanjianzi、②添加关键字、③tjgjz】\n" +
-                    "> 触发条件 exact【①完全匹配、②完全】；vague【①模糊匹配、②模糊】、regex【①正则匹配、②正则】\n" +
-                    "> 冲突规则 merge【合并】、cover【覆盖】、keep【保持】、add【追加】"
-
-            onCommand {
-                if (it.count() !in 3..5)
-                    return@onCommand false
-                //读取用户所提供的参数
-                val type = it[0]
-                val keyword = it[1]
-                val replies = mutableListOf(it[2])
-                var groupsString = ""
-                var conflictModeString = "merge"
-                fun judgeParameter4() {
-                    when (it[3]) {
-                        in possibleConflictModes -> {
-                            conflictModeString = it[3]
-                        }
-                        else -> groupsString = it[3]
-                    }
-                }
-
-                when (it.count()) {
-                    4 -> judgeParameter4()
-                    5 -> {
-                        groupsString = it[3]
-                        conflictModeString = it[4]
-                    }
-                }
-
-                return@onCommand doAdd(type, groupsString, conflictModeString, keyword, replies)
-            }
-        }
-
-        registerCommand {
-            name = "keywordAddMultipleReply"
-            alias = listOf("添加多回复关键字", "tianjiaduohuifuguanjianzi", "tjdhfgjz")
-            description = "添加一条关键字回复规则，其回复为多个回复"
             usage = "一、指令格式\n" +
-                    "【/keywordAddMultipleReply+触发条件+关键字+回复列表（以分隔符分隔）+回复分隔符（可选）+开启群列表（可选）+冲突模式（可选）】\n" +
+                    "【/keywordAdd+触发条件+关键字+回复列表（以分隔符分隔）+回复分隔符（可选）+开启群列表（可选）+冲突模式（可选）】\n" +
                     "> 请将“+”替代为空格。\n" +
                     "> 关键字和回复中不能出现空格！请使用标点分隔！如果确实需要使用空格，请手动修改配置文件\n" +
                     "> 私聊消息（好友·临时）都会被规则响应，群聊消息可以通过开启群列表控制在哪些群开启。\n" +
