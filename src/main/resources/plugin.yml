@@ -2,5 +2,5 @@ name: "KeywordReply"
 author: "shine_5402"
 version: "0.2.0"
 main: "top.shine5402.KeywordReply"
-info: "根据关键字规则自动回复的插件"
+info: "根据关键字规则自动回复的插件。以GNU AGPL v3分发。详见仓库rm和license。"
 depends: []
