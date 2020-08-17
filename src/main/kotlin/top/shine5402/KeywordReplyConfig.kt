@@ -1,12 +1,15 @@
 package top.shine5402
 
+import net.mamoe.mirai.console.plugins.Config
+
 object KeywordReplyConfig {
-    private val config = KeywordReply.loadConfig("settings.yml")
+    private lateinit var config:Config
     var configVersion
         get() = config["version"].toString().toIntOrNull() ?: 1
         set(value: Int) { config["version"] = value }
 
     fun loadConfig() {
+        config =  KeywordReply.loadConfig("settings.yml")
         upgradeConfig()
         val keywordRulesConfigSection = if (config.exist("rules")) config.getConfigSectionList("rules") else null
         KeywordReply.keywordRules.clear()
