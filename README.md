@@ -20,6 +20,7 @@
 本插件的目标与测试 mirai 版本为：core：1.1.3；console：0.5.2。
 
 其他版本的 mirai 和 mirai-console 可能无法正常运作，还请自行测试。
+！！本插件应当与现行的mirai**不兼容**，请寻找其他可用替代。！！
 
 ## 许可证
 本插件以 GNU AGPL 3.0 分发。详见 [LICENSE](LICENSE)。
